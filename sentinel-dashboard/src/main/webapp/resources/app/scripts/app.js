@@ -301,6 +301,22 @@ angular
           }]
         }
       })
+      //走V2流控创建
+      .state('dashboard.identityV2', {
+        templateUrl: 'app/views/identity_v2.html',
+        url: 'v2/identity/:app',
+        controller: 'IdentityCtlV2',
+        resolve: {
+          loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {
+            return $ocLazyLoad.load({
+              name: 'sentinelDashboardApp',
+              files: [
+                'app/scripts/controllers/identity_v2.js',
+              ]
+            });
+          }]
+        }
+      })
 
       .state('dashboard.gatewayIdentity', {
         templateUrl: 'app/views/gateway/identity.html',

@@ -29,6 +29,7 @@ import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 
+import com.alibaba.fastjson.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,10 +60,10 @@ public class FlowControllerV2 {
     private InMemoryRuleRepositoryAdapter<FlowRuleEntity> repository;
 
     @Autowired
-    @Qualifier("flowRuleDefaultProvider")
+    @Qualifier("flowRuleNacosProvider")
     private DynamicRuleProvider<List<FlowRuleEntity>> ruleProvider;
     @Autowired
-    @Qualifier("flowRuleDefaultPublisher")
+    @Qualifier("flowRuleNacosPublisher")
     private DynamicRulePublisher<List<FlowRuleEntity>> rulePublisher;
 
     @GetMapping("/rules")
@@ -72,8 +73,10 @@ public class FlowControllerV2 {
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
+        logger.debug("/v2/flow/rules收到参数【app】:{}",app);
         try {
             List<FlowRuleEntity> rules = ruleProvider.getRules(app);
+            logger.debug("/v2/flow/rules通过flowRuleNacosProvider获取规则:{}", JSON.toJSON(rules));
             if (rules != null && !rules.isEmpty()) {
                 for (FlowRuleEntity entity : rules) {
                     entity.setApp(app);
@@ -166,6 +169,7 @@ public class FlowControllerV2 {
         if (id == null || id <= 0) {
             return Result.ofFail(-1, "Invalid id");
         }
+        logger.debug("/v2/flow/rule写入参数【id】:{},【FlowRuleEntity】:{}",id,JSON.toJSON(entity));
         FlowRuleEntity oldEntity = repository.findById(id);
         if (oldEntity == null) {
             return Result.ofFail(-1, "id " + id + " does not exist");
@@ -205,6 +209,7 @@ public class FlowControllerV2 {
         if (id == null || id <= 0) {
             return Result.ofFail(-1, "Invalid id");
         }
+        logger.debug("/v2/flow/rule删除参数【id】:{}",id);
         FlowRuleEntity oldEntity = repository.findById(id);
         if (oldEntity == null) {
             return Result.ofSuccess(null);
