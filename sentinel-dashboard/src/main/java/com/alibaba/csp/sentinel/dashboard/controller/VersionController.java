@@ -46,4 +46,47 @@ public class VersionController {
             return Result.ofFail(1, "getVersion failed: empty version");
         }
     }
+
+    /**
+     * 从yaml注入环境变量:PROJECT_NAME
+     * @return
+     */
+    @GetMapping("/projectName")
+    public Result<String> apiGetProjectName() {
+        String projectName = System.getenv("PROJECT_NAME");
+
+        if (StringUtil.isNotBlank(projectName)) {
+            return Result.ofSuccess(projectName);
+        } else {
+            return Result.ofSuccess("");
+        }
+    }
+    /**
+     * 从yaml注入环境变量:PROJECT_ENV
+     * @return
+     */
+    @GetMapping("/projectEnv")
+    public Result<String> apiGetProjectEnv() {
+        String projectEnv = System.getenv("PROJECT_ENV");
+
+        if (StringUtil.isNotBlank(projectEnv)) {
+            return Result.ofSuccess(projectEnv);
+        } else {
+            return Result.ofSuccess("");
+        }
+    }
+    /**
+     * 从yaml注入环境变量:PROJECT_ENV
+     * @return
+     */
+    @GetMapping("/projectEnvHref")
+    public Result<String> apiGetProjectEnvHref() {
+        String projectEnvHref = System.getenv("PROJECT_ENV_HREF");
+
+        if (StringUtil.isNotBlank(projectEnvHref)) {
+            return Result.ofSuccess(projectEnvHref);
+        } else {
+            return Result.ofSuccess("");
+        }
+    }
 }

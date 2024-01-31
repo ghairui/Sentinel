@@ -304,7 +304,7 @@ angular
       //走V2流控创建
       .state('dashboard.identityV2', {
         templateUrl: 'app/views/identity_v2.html',
-        url: 'v2/identity/:app',
+        url: '/v2/identity/:app',
         controller: 'IdentityCtlV2',
         resolve: {
           loadMyFiles: ['$ocLazyLoad', function ($ocLazyLoad) {

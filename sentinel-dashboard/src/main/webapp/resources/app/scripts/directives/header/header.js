@@ -16,6 +16,21 @@ angular.module('sentinelDashboardApp')
             $scope.dashboardVersion = data.data;
           }
         });
+        VersionService.projectName().success(function (data) {
+          if (data.code == 0) {
+            $scope.projectName = data.data;
+          }
+        });
+        VersionService.projectEnv().success(function (data) {
+          if (data.code == 0) {
+            $scope.projectEnv = data.data;
+          }
+        });
+        VersionService.projectEnvHref().success(function (data) {
+          if (data.code == 0) {
+            $scope.projectEnvHref = data.data;
+          }
+        });
 
         if (!$window.localStorage.getItem("session_sentinel_admin")) {
           AuthService.check().success(function (data) {
