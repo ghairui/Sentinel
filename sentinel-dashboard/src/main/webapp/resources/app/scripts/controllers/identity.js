@@ -5,7 +5,7 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
   '$interval', '$location', '$timeout',
   function ($scope, $stateParams, IdentityService, ngDialog,
     FlowService, DegradeService, AuthorityRuleService, ParamFlowService, MachineService, $interval, $location, $timeout) {
-
+    console.log('identity.js->in function');
     $scope.app = $stateParams.app;
 
     $scope.currentPage = 1;
@@ -93,6 +93,7 @@ app.controller('IdentityCtl', ['$scope', '$stateParams', 'IdentityService',
         return;
       }
       FlowService.newRule(flowRuleDialogScope.currentRule).success(function (data) {
+      console.log('identity_v1->saveFlowRule->newRule');
         if (data.code === 0) {
           flowRuleDialog.close();
           let url = '/dashboard/flow/' + $scope.app;
