@@ -1,7 +1,7 @@
 var app = angular.module('sentinelDashboardApp');
 
 app.controller('IdentityCtlV2', ['$scope', '$stateParams', 'IdentityService',
-  'ngDialog', 'FlowServiceV2', 'DegradeService', 'AuthorityRuleService', 'ParamFlowService', 'MachineService',
+  'ngDialog', 'FlowServiceV2', 'DegradeServiceV2', 'AuthorityRuleService', 'ParamFlowServiceV2', 'MachineService',
   '$interval', '$location', '$timeout',
   function ($scope, $stateParams, IdentityService, ngDialog,
     FlowService, DegradeService, AuthorityRuleService, ParamFlowService, MachineService, $interval, $location, $timeout) {
@@ -141,7 +141,7 @@ app.controller('IdentityCtlV2', ['$scope', '$stateParams', 'IdentityService',
       };
 
       degradeRuleDialogScope.degradeRuleDialog = {
-        title: '新增熔断规则',
+        title: '新增熔断规则v2',
         type: 'add',
         confirmBtnText: '新增',
         saveAndContinueBtnText: '新增并继续添加'
@@ -164,7 +164,7 @@ app.controller('IdentityCtlV2', ['$scope', '$stateParams', 'IdentityService',
       DegradeService.newRule(degradeRuleDialogScope.currentRule).success(function (data) {
         if (data.code === 0) {
           degradeRuleDialog.close();
-          var url = '/dashboard/degrade/' + $scope.app;
+          var url = '/dashboard/v2/degrade/' + $scope.app;
           $location.path(url);
         } else {
           alert('失败：' + data.msg);
@@ -275,16 +275,16 @@ app.controller('IdentityCtlV2', ['$scope', '$stateParams', 'IdentityService',
           ParamFlowService.addNewRule(ruleEntity).success((data) => {
               if (data.success) {
                   paramFlowRuleDialog.close();
-                  let url = '/dashboard/paramFlow/' + $scope.app;
+                  let url = '/dashboard/v2/paramFlow/' + $scope.app;
                   $location.path(url);
               } else {
-                  alert('添加热点规则失败：' + data.msg);
+                  alert('添加热点规则v2失败：' + data.msg);
               }
           }).error((data) => {
               if (data) {
-                  alert('添加热点规则失败：' + data.msg);
+                  alert('添加热点规则v2失败：' + data.msg);
               } else {
-                  alert("添加热点规则失败：未知错误");
+                  alert("添加热点规则v2失败：未知错误");
               }
           });
       }
@@ -338,7 +338,7 @@ app.controller('IdentityCtlV2', ['$scope', '$stateParams', 'IdentityService',
           };
 
           paramFlowRuleDialogScope.paramFlowRuleDialog = {
-              title: '新增热点规则',
+              title: '新增热点规则v2',
               type: 'add',
               confirmBtnText: '新增',
               saveAndContinueBtnText: '新增并继续添加',
