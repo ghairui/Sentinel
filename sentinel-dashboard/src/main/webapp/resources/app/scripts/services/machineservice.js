@@ -21,5 +21,11 @@ app.service('MachineService', ['$http', '$httpParamSerializerJQLike',
         })
       });
     };
+    this.removeAllAppMachine = function (app) {
+          return $http({
+            url: 'app/' + app + '/machine/removeAll.json',
+            method: 'GET'
+          });
+        };
   }]
 );

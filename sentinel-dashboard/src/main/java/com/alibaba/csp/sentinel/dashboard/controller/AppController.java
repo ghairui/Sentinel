@@ -82,4 +82,23 @@ public class AppController {
             return Result.ofFail(1, "remove failed");
         }
     }
+    @GetMapping(value = "/{app}/machine/removeAll.json")
+    public Result<String> removeMachineForNoHealthy(@PathVariable("app") String app) {
+        AppInfo appInfo = appManagement.getDetailApp(app);
+        if (appInfo == null) {
+            return Result.ofSuccess(null);
+        }
+        List<MachineInfo> list = new ArrayList<>(appInfo.getMachines());
+        try {
+            list.stream().forEach(m -> {
+                if(! m.isHealthy()){
+                    appManagement.removeMachine(app, m.getIp(), m.getPort());
+                }
+            });
+            return Result.ofSuccessMsg("removeAll success");
+        }catch (Exception e){
+            return Result.ofFail(1, e.getMessage());
+        }
+
+    }
 }

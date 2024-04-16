@@ -59,6 +59,21 @@ app.controller('MachineCtl', ['$scope', '$stateParams', 'MachineService',
         }
       );
     };
+
+    $scope.removeAllMachine = function() {
+          if (!confirm("确定要删除所有不健康机器吗?")) {
+            return;
+          }
+          MachineService.removeAllAppMachine($scope.app).success(
+            function(data) {
+              if (data.code == 0) {
+                $scope.reloadMachines();
+              } else {
+                alert("remove failed");
+              }
+            }
+          );
+        };
     
     $scope.reloadMachines();
     
