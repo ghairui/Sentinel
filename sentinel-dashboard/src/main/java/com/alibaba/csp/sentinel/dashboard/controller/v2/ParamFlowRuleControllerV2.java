@@ -20,21 +20,26 @@ import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.dashboard.client.CommandNotFoundException;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.SentinelVersion;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleCorrectEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.RuleRepository;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import com.alibaba.csp.sentinel.dashboard.rule.nacos.NacosConfigUtil;
 import com.alibaba.csp.sentinel.dashboard.rule.nacos.RuleNacosProvider;
 import com.alibaba.csp.sentinel.dashboard.rule.nacos.RuleNacosPublisher;
 import com.alibaba.csp.sentinel.dashboard.util.VersionUtils;
+import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.nacos.api.config.ConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
@@ -43,8 +48,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * @author Eric Zhao
@@ -67,11 +72,11 @@ public class ParamFlowRuleControllerV2 {
     @Autowired
     private RuleRepository<ParamFlowRuleEntity, Long> repository;
     @Autowired
-    @Qualifier("ruleNacosProvider")
-    private RuleNacosProvider ruleProvider;
+    @Qualifier("paramFlowRuleNacosProvider")
+    private DynamicRuleProvider<List<ParamFlowRuleEntity>> ruleProvider;
     @Autowired
-    @Qualifier("ruleNacosPublisher")
-    private RuleNacosPublisher rulePublisher;
+    @Qualifier("paramFlowRuleNacosPublisher")
+    private DynamicRulePublisher<List<ParamFlowRuleEntity>> rulePublisher;
 
     private boolean checkIfSupported(String app, String ip, int port) {
         try {
@@ -107,19 +112,31 @@ public class ParamFlowRuleControllerV2 {
             return unsupportedVersion();
         }*/
         try {
-            String ruleStr = ruleProvider.getRules(app + NacosConfigUtil.PARAM_FLOW_DATA_ID_POSTFIX, app);
-            logger.debug("/v2/paramFlow/rules通过ruleNacosProvider获取规则:{}", ruleStr);
-            List<ParamFlowRuleEntity> rules = new ArrayList<>();
-            if (ruleStr != null) {
+
+            List<ParamFlowRuleEntity> entityList = ruleProvider.getRules(app);
+            /*entityList.forEach(e -> e.setApp(app));
+            List<ParamFlowRuleEntity> rules = entityList.stream().map(rule -> {
+                ParamFlowRule paramFlowRule = new ParamFlowRule();
+                BeanUtils.copyProperties(rule, paramFlowRule);
+                ParamFlowRuleEntity entity = ParamFlowRuleEntity.fromParamFlowRule(rule.getApp(), rule.getIp(), rule.getPort(), paramFlowRule);
+                entity.setId(rule.getId());
+                entity.setGmtCreate(rule.getGmtCreate());
+                return entity;
+            }).collect(Collectors.toList());*/
+
+            //List<ParamFlowRuleEntity> rules = new ArrayList<>();
+            /*if (ruleStr != null) {
                 rules = JSON.parseArray(ruleStr, ParamFlowRuleEntity.class);
+                logger.debug("",rules);
+                //rules = entityList;
                 if (rules != null && !rules.isEmpty()) {
                     for (ParamFlowRuleEntity entity : rules) {
                         entity.setApp(app);
                     }
                 }
-            }
-            rules = repository.saveAll(rules);
-            return Result.ofSuccess(rules);
+            }*/
+            entityList = repository.saveAll(entityList);
+            return Result.ofSuccess(entityList);
         } catch (ExecutionException ex) {
             logger.error("Error when querying parameter flow rules", ex.getCause());
             if (isNotSupported(ex.getCause())) {
@@ -256,8 +273,8 @@ public class ParamFlowRuleControllerV2 {
     private void publishRules(String app, String ip, Integer port) {
         try {
             List<ParamFlowRuleEntity> rules = repository.findAllByApp(app);
-            String ruleStr = JSON.toJSONString(rules);
-            rulePublisher.publish(app + NacosConfigUtil.PARAM_FLOW_DATA_ID_POSTFIX,app, ruleStr);
+            rulePublisher.publish(app, rules);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
